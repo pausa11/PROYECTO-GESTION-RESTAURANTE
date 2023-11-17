@@ -1,29 +1,33 @@
-class Estudiante:
-    def __init__(self, nombre, edad, calificaciones):
+class Menu:
+    def __init__(self, idMenu, nombre, platos):
+        self.idMenu = idMenu
         self.nombre = nombre
-        self.edad = edad
-        self.calificaciones = calificaciones
+        self.platos = platos
 
     def obtener_informacion(self):
-        return f"Nombre: {self.nombre}, Edad: {self.edad}, Calificaciones: {self.calificaciones}"
+        info_menu = f"ID del Menú: {self.idMenu}, Nombre: {self.nombre}, Platos:"
+        for plato in self.platos:
+            info_menu += f"\n   - {plato.obtener_informacion()}"
+        return info_menu
 
-    def obtener_promedio(self):
-        if len(self.calificaciones) > 0:
-            promedio = sum(self.calificaciones) / len(self.calificaciones)
-            return f"Promedio de calificaciones: {promedio}"
-        else:
-            return "El estudiante no tiene calificaciones aún."
+# Obtener información del menú por teclado
+idMenu = int(input("Ingrese el ID del menú: "))
+nombre_menu = input("Ingrese el nombre del menú: ")
 
-# Obtener información del estudiante por teclado
-nombre = input("Ingrese el nombre del estudiante: ")
-edad = int(input("Ingrese la edad del estudiante: "))
-calificaciones = [int(x) for x in input("Ingrese las calificaciones del estudiante separadas por espacios: ").split()]
+# Crear una lista de platos para el menú
+platos_menu = []
+num_platos = int(input("Ingrese el número de platos en el menú: "))
+for i in range(num_platos):
+    print(f"\nIngrese la información del plato {i + 1}:")
+    idPlato = int(input("   ID del Plato: "))
+    nombre_plato = input("   Nombre del Plato: ")
+    descripcion_plato = input("   Descripción del Plato: ")
+    precio_plato = float(input("   Precio del Plato: "))
+    plato = Plato(idPlato, nombre_plato, descripcion_plato, precio_plato)
+    platos_menu.append(plato)
 
-# Crear un objeto de la clase Estudiante con la información ingresada
-estudiante1 = Estudiante(nombre, edad, calificaciones)
+# Crear un objeto de la clase Menu con la información ingresada
+menu1 = Menu(idMenu, nombre_menu, platos_menu)
 
-# Obtener información del estudiante
-print(estudiante1.obtener_informacion())
-
-# Obtener el promedio de calificaciones
-print(estudiante1.obtener_promedio())
+# Obtener información del menú
+print(menu1.obtener_informacion())
