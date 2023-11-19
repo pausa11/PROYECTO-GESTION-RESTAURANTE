@@ -1,4 +1,6 @@
 import os
+import tkinter as tk
+from tkinter import simpledialog, messagebox , ttk
 
 # Importar clases
 
@@ -23,10 +25,9 @@ lista_mesas = []
 # Crear una lista de pedidos
 lista_pedidos = []
 
-
 # Creacion clientes
 
-cliente1 = Cliente(1, "Juan", "cliente1@hotmail.com","3113654364")
+cliente1 = Cliente("1", "Juan", "cliente1@hotmail.com","3113654364")
 lista_clientes.append(cliente1)
 
 # Creacion platos
@@ -36,7 +37,7 @@ lista_platos.append(plato1)
 
 # Creacion reservas
 
-reserva1 = Reserva(1, "Juan", "12/10/2021", 5, "Mesa 1")
+reserva1 = Reserva( "Juan", "12/10/2021", 5, "1")
 lista_reservas.append(reserva1)
 
 # Creacion mesas
@@ -53,130 +54,487 @@ menuRestaurante = Menu()
 menuRestaurante.agregar_plato(plato1)
 
 
-#************************************************Menu principal************************************************
+#************************************************Clase Restaurante************************************************
 
-def menu():
-    print("Gestion Sistema Restaurante")
-    print("1. Gestion Menu")
-    print("2. Gestion Reservas")
-    print("3. Salir")
+class RestauranteApp(tk.Frame):
+    def __init__(self, master):
+        self.master = master
+        self.master.title("Gestión de Restaurante")
+        self.master.geometry("400x400")
+        self.master.resizable(False, False)
 
-while True:
-    os.system('cls' if os.name == 'nt' else 'clear')
-    menu()
-    opcionSistemaGestionRestaurante = input("Ingrese una opcion: ")
+        #************************************************contenido dinamico************************************************
 
-    #************************************************1) gestion menu************************************************
+        # Crear un marco para el contenido dinámico
+        self.frame_contenido = tk.Frame(master)
+        self.frame_contenido.pack()
 
-    if opcionSistemaGestionRestaurante == "1":
-        os.system('cls' if os.name == 'nt' else 'clear')
-        print("Gestion Menu")
-        print("1. Agregar Plato")
-        print("2. Eliminar Plato")
-        print("3. Ordenar Platos")
-        print("4. Editar Plato")
-        print("5. Mostrar Menu")
+        #************************************************Variables************************************************
+        
+        self.nombre = tk.StringVar()
+        self.descripcion = tk.StringVar()
+        self.precio = tk.StringVar()
+        self.cantidad = tk.StringVar()
 
-        opcionGestionMenu = input("Ingrese una opcion: ")
+        #************************************************Labels************************************************
 
-        #--------------------------------1.1) Agregar Plato--------------------------------
+        #sisema de gestion restaurante que navega a las diferentes opciones
 
-        if opcionGestionMenu == "1":
-            print("Agregar Plato")
-            nombrePlato = input("Ingrese el nombre del plato: ")
-            descripcionPlato = input("Ingrese la descripcion del plato: ")
+        self.lbl_sistema_gestion_restaurante = tk.Label(self.master, text="Sistema de Gestion Restaurante")
+        self.lbl_sistema_gestion_restaurante.pack()
+
+        #************************************************Botones************************************************
+
+        #gestion menu 
+
+        self.btn_gestion_menu = tk.Button(self.master, text="Gestion Menu", command=self.gestionMenu)
+        self.btn_gestion_menu.pack()
+
+        #gestion reservas
+
+        self.btn_gestion_reservas = tk.Button(self.master, text="Gestion Reservas", command=self.gestionReservas)
+        self.btn_gestion_reservas.pack()
+
+
+    
+    #************************************************Funciones************************************************
+
+    def gestionMenu(self):
+
+         # Limpiar el contenido actual
+        for widget in self.frame_contenido.winfo_children():
+            widget.destroy()
+
+        style = ttk.Style()
+        style.configure("TButton", font=('Calibri', 12) , padding=10 , background="green", foreground="black")
+
+        # Etiqueta para indicar la página actual
+        lbl_gestion_menu = tk.Label(self.frame_contenido, text="Gestión de Menú", font=('Calibri', 14))
+        lbl_gestion_menu.pack()
+
+        # Botones de navegación
+        btn_agregar_plato = ttk.Button(self.frame_contenido, text="Agregar Plato", command=self.agregarPlato, style='TButton')
+        btn_agregar_plato.pack()
+
+        btn_editar_plato = ttk.Button(self.frame_contenido, text="Editar Plato", command=self.editarPlato, style='TButton')
+        btn_editar_plato.pack()
+
+        btn_mostrar_menu = ttk.Button(self.frame_contenido, text="Mostrar Menú", command=self.mostrarMenu, style='TButton')
+        btn_mostrar_menu.pack()
+
+        btn_eliminar_plato = ttk.Button(self.frame_contenido, text="Eliminar Plato", command=self.eliminarPlato, style='TButton')
+        btn_eliminar_plato.pack()
+
+    #--------------------------------------------------------------------------------------------------------------
+
+    def gestionReservas(self):
+            
+            # Limpiar el contenido actual
+            for widget in self.frame_contenido.winfo_children():
+                widget.destroy()
+    
+            # Etiqueta para indicar la página actual
+            lbl_gestion_reservas = tk.Label(self.frame_contenido, text="Gestión de Reservas")
+            lbl_gestion_reservas.pack()
+    
+            # Botones de navegación
+            btn_agregar_reserva = tk.Button(self.frame_contenido, text="Realizar Reserva", command=self.validarCliente)
+            btn_agregar_reserva.pack()
+    
+            # btn_editar_reserva = tk.Button(self.frame_contenido, text="Editar Reserva", command=self.editarReserva)
+            # btn_editar_reserva.pack()
+    
+            btn_mostrar_reservas = tk.Button(self.frame_contenido, text="Mostrar Reservas", command=self.mostrarReservas)
+            btn_mostrar_reservas.pack()
+    
+            # btn_eliminar_reserva = tk.Button(self.frame_contenido, text="Eliminar Reserva", command=self.eliminarReserva)
+            # btn_eliminar_reserva.pack()
+
+    #--------------------------------------------------------------------------------------------------------------
+
+    def agregarPlato(self):
+
+        ventana_agregar_plato = tk.Toplevel(root)
+        ventana_agregar_plato.title("Agregar Plato")
+
+        # Crear etiquetas y cuadros de texto para ingresar información del plato
+        label_nombre = tk.Label(ventana_agregar_plato, text="Nombre del Plato:")
+        entry_nombre = tk.Entry(ventana_agregar_plato)
+        label_descripcion = tk.Label(ventana_agregar_plato, text="Descripción:")
+        entry_descripcion = tk.Entry(ventana_agregar_plato)
+        label_precio = tk.Label(ventana_agregar_plato, text="Precio:")
+        entry_precio = tk.Entry(ventana_agregar_plato)
+        label_cantidad = tk.Label(ventana_agregar_plato, text="Cantidad:")
+        entry_cantidad = tk.Entry(ventana_agregar_plato)
+
+        label_nombre.pack()
+        entry_nombre.pack()
+        label_descripcion.pack()
+        entry_descripcion.pack()
+        label_precio.pack()
+        entry_precio.pack()
+        label_cantidad.pack()
+        entry_cantidad.pack()
+
+        # Función para manejar el clic en el botón de agregar
+        def agregar():
+            nombre = entry_nombre.get()
+            descripcion = entry_descripcion.get()
 
             # Validar entrada para el precio
-            while True:
-                try:
-                    precioPlato = int(input("Ingrese el precio del plato: "))
-                    break  # Si la conversión a int es exitosa, salir del bucle
-                except ValueError:
-                    print("Por favor, ingrese un número válido para el precio.")
-
-            precioPlato = int(input("Ingrese el precio del plato: "))
+            try:
+                precio = float(entry_precio.get())
+            except ValueError:
+                messagebox.showerror("Error", "Por favor, ingrese un número válido para el precio.")
+                return
 
             # Validar entrada para la cantidad de platos
-            while True:
-                try:
-                    cantidadPlato = int(input("Ingrese la cantidad de platos: "))
-                    break  # Si la conversión a int es exitosa, salir del bucle
-                except ValueError:
-                    print("Por favor, ingrese un número válido para la cantidad de platos.")
+            try:
+                cantidad = int(entry_cantidad.get())
+            except ValueError:
+                messagebox.showerror("Error", "Por favor, ingrese un número válido para la cantidad de platos.")
+                return
 
-            cantidadPlato = int(input("Ingrese la cantidad de platos: "))
-            plato = Plato(nombrePlato, descripcionPlato, precioPlato, cantidadPlato)
+            plato = Plato(nombre, descripcion, precio, cantidad)
             lista_platos.append(plato)
             menuRestaurante.agregar_plato(plato)
-            print("Plato agregado exitosamente")
-            input("Presione una tecla para continuar...")
+            messagebox.showinfo("Éxito", "Plato agregado exitosamente")
+            ventana_agregar_plato.destroy()
 
-        #--------------------------------1.2) Eliminar Plato--------------------------------
+        # Crear botón para agregar
+        btn_agregar = tk.Button(ventana_agregar_plato, text="Agregar", command=agregar)
+        btn_agregar.pack()
 
-        elif opcionGestionMenu == "2":
-            print("Eliminar Plato")
-            nombrePlato = input("Ingrese el nombre del plato: ")
-            lista_platos = [p for p in lista_platos if p.nombre != nombrePlato]
-            print("Plato eliminado exitosamente")
-            input("Presione una tecla para continuar...")
+        # Función para manejar el clic en el botón de cancelar
 
-        #--------------------------------1.3) Ordenar Platos--------------------------------
+        def cancelar():
+            ventana_agregar_plato.destroy()
 
-        elif opcionGestionMenu == "3":
-            print("Ordenar Platos")
-            lista_platos.sort(key=lambda x: x.nombre)
-            print("Platos ordenados exitosamente")
-            input("Presione una tecla para continuar...")
+        # Crear botón para cancelar
 
-        #--------------------------------1.4) Editar Plato--------------------------------
+        btn_cancelar = tk.Button(ventana_agregar_plato, text="Cancelar", command=cancelar)
+        btn_cancelar.pack()
 
-        elif opcionGestionMenu == "4":
-            print("Editar Plato")
-            nombrePlato = input("Ingrese el nombre del plato: ")
-            for plato in lista_platos:
-                if plato.nombre == nombrePlato:
-                    nuevoNombrePlato = input("Ingrese el nuevo nombre del plato: ")
-                    nuavaDescripcionPlato = input("Ingrese la nueva descripcion del plato: ")
+    #--------------------------------------------------------------------------------------------------------------
 
-                    # Validar entrada para el nuevo precio
-                    while True:
-                        try:
-                            nuevoPrecioPlato = int(input("Ingrese el nuevo precio del plato: "))
-                            break  # Si la conversión a int es exitosa, salir del bucle
-                        except ValueError:
-                            print("Por favor, ingrese un número válido para el precio.")
+    def agregarReserva(self):
+        ventana_agregar_reserva = tk.Toplevel(root)
+        ventana_agregar_reserva.title("Agregar Reserva")
 
-                    # Validar entrada para la nueva cantidad de platos
-                    while True:
-                        try:
-                            nuevaCantidadPlato = int(input("Ingrese la nueva cantidad de platos: "))
-                            break  # Si la conversión a int es exitosa, salir del bucle
-                        except ValueError:
-                            print("Por favor, ingrese un número válido para la cantidad de platos.")
+        # Pide la identificación del cliente para realizar la reserva, si no está registrado, lo registra
+        
 
-                    plato.nombre = nuevoNombrePlato
-                    plato.descripcion = nuavaDescripcionPlato
-                    plato.precio = nuevoPrecioPlato
-                    plato.cantidad = nuevaCantidadPlato
-                    print("Plato editado exitosamente")
-                    break
-            input("Presione una tecla para continuar...")
+        # Crear etiquetas y cuadros de texto para ingresar información de la reserva
+        label_nombre = tk.Label(ventana_agregar_reserva, text="Nombre del Cliente:")
+        entry_nombre = tk.Entry(ventana_agregar_reserva)
+        label_fecha = tk.Label(ventana_agregar_reserva, text="Fecha:")
+        entry_fecha = tk.Entry(ventana_agregar_reserva)
+        label_num_personas = tk.Label(ventana_agregar_reserva, text="Número de Personas:")
+        entry_num_personas = tk.Entry(ventana_agregar_reserva)
+        label_mesa_asignada = tk.Label(ventana_agregar_reserva, text="Mesa Asignada:")
+        entry_mesa_asignada = tk.Entry(ventana_agregar_reserva)
 
-        #--------------------------------1.5) Mostrar Menu--------------------------------
+        label_nombre.pack()
+        entry_nombre.pack()
+        label_fecha.pack()
+        entry_fecha.pack()
+        label_num_personas.pack()
+        entry_num_personas.pack()
+        label_mesa_asignada.pack()
+        entry_mesa_asignada.pack()
 
-        elif opcionGestionMenu == "5":
-            print("Mostrar Menu")
-            for plato in lista_platos:
-                print(plato.getNombre())
-            input("Presione una tecla para continuar...")
-            continue
+        # Función para manejar el clic en el botón de agregar 
+        def agregar():
+            nombre = entry_nombre.get()
+            fecha = entry_fecha.get()
 
-        else:
-            print("Opcion no valida")
-            input("Presione una tecla para continuar...")
-            continue
+            # Validar entrada para el número de personas
+            try:
+                num_personas = int(entry_num_personas.get())
+            except ValueError:
+                messagebox.showerror("Error", "Por favor, ingrese un número válido para el número de personas.")
+                return
 
-    #************************************************2) gestion reservas************************************************
+            mesa_asignada = entry_mesa_asignada.get()
+
+            reserva = Reserva(nombre, fecha, num_personas, mesa_asignada)
+            lista_reservas.append(reserva)
+            messagebox.showinfo("Éxito", "Reserva agregada exitosamente")
+            ventana_agregar_reserva.destroy()
+
+        # Crear botón para agregar
+        btn_agregar = tk.Button(ventana_agregar_reserva, text="Agregar", command=agregar)
+        btn_agregar.pack()
+
+        # Función para manejar el clic en el botón de cancelar
+        def cancelar():
+            ventana_agregar_reserva.destroy()
+
+        # Crear botón para cancelar
+        btn_cancelar = tk.Button(ventana_agregar_reserva, text="Cancelar", command=cancelar)
+        btn_cancelar.pack()
+
+    #--------------------------------------------------------------------------------------------------------------
+
+    def agregarCliente(self):
+        ventana_agregar_cliente = tk.Toplevel(root)
+        ventana_agregar_cliente.title("Agregar Cliente")
+
+        # Crear etiquetas y cuadros de texto para ingresar información del cliente
+        label_id_cliente = tk.Label(ventana_agregar_cliente, text="Identificación del Cliente:")
+        entry_id_cliente = tk.Entry(ventana_agregar_cliente)
+        label_nombre = tk.Label(ventana_agregar_cliente, text="Nombre del Cliente:")
+        entry_nombre = tk.Entry(ventana_agregar_cliente)
+        label_correo_electronico = tk.Label(ventana_agregar_cliente, text="Correo Electrónico:")
+        entry_correo_electronico = tk.Entry(ventana_agregar_cliente)
+        label_telefono = tk.Label(ventana_agregar_cliente, text="Teléfono:")
+        entry_telefono = tk.Entry(ventana_agregar_cliente)
+
+        label_id_cliente.pack()
+        entry_id_cliente.pack()
+        label_nombre.pack()
+        entry_nombre.pack()
+        label_correo_electronico.pack()
+        entry_correo_electronico.pack()
+        label_telefono.pack()
+        entry_telefono.pack()
+
+        # Función para manejar el clic en el botón de agregar
+        def agregar():
+            id_cliente = entry_id_cliente.get()
+            nombre = entry_nombre.get()
+            correo_electronico = entry_correo_electronico.get()
+            telefono = entry_telefono.get()
+
+            cliente = Cliente(id_cliente,nombre, correo_electronico, telefono)
+            lista_clientes.append(cliente)
+            messagebox.showinfo("Éxito", "Cliente agregado exitosamente")
+            ventana_agregar_cliente.destroy()
+
+        # Crear botón para agregar
+        btn_agregar = tk.Button(ventana_agregar_cliente, text="Agregar", command=agregar)
+        btn_agregar.pack()
+
+        # Función para manejar el clic en el botón de cancelar
+        def cancelar():
+            ventana_agregar_cliente.destroy()
+
+        # Crear botón para cancelar
+        btn_cancelar = tk.Button(ventana_agregar_cliente, text="Cancelar", command=cancelar)
+        btn_cancelar.pack()
+
+    #--------------------------------------------------------------------------------------------------------------
+
+    def validarCliente(self):
+        ventana_agregar_reserva = tk.Toplevel(root)
+        ventana_agregar_reserva.title("Agregar Reserva")
+        label_id_cliente = tk.Label(ventana_agregar_reserva, text="Identificación del Cliente:")
+        entry_id_cliente = tk.Entry(ventana_agregar_reserva)
+        label_id_cliente.pack()
+        entry_id_cliente.pack()
+
+        def buscarCliente():
+            id_cliente = entry_id_cliente.get()
+            for cliente in lista_clientes:
+                if cliente.getIdCliente() == id_cliente:
+                    return cliente
+            return None
+
+        def realizarAccion():
+            cliente = buscarCliente()
+
+            if cliente is None:
+                messagebox.showinfo("Éxito", "Cliente no registrado, por favor regístrelo")
+                ventana_agregar_reserva.destroy()
+                self.agregarCliente() 
+            else:
+                # Agregar lógica para reservar con el cliente encontrado
+                messagebox.showinfo("Éxito", f"cliente esta registrado como {cliente.getNombre()}")
+                ventana_agregar_reserva.destroy()
+                self.agregarReserva()
+
+        # Botón para iniciar la búsqueda y realizar la acción correspondiente
+        btn_buscar = tk.Button(ventana_agregar_reserva, text="Buscar", command=realizarAccion)
+        btn_buscar.pack()
+
+    #--------------------------------------------------------------------------------------------------------------
+
+    def mostrarMenu(self):
+        # Limpiar el contenido actual
+
+        for widget in self.frame_contenido.winfo_children():
+            widget.destroy()
+
+        # Etiqueta para indicar la página actual
+
+        lbl_mostrar_menu = tk.Label(self.frame_contenido, text="Menú")
+        lbl_mostrar_menu.pack()
+
+        # muestra el menu en la interfaz grafica
+
+        for plato in lista_platos:
+            lbl_plato = tk.Label(self.frame_contenido, text=plato.getNombre())
+            lbl_plato.pack()
+
+    #--------------------------------------------------------------------------------------------------------------
+
+    def mostrarReservas(self):
+        # Limpiar el contenido actual
+
+        for widget in self.frame_contenido.winfo_children():
+            widget.destroy()
+
+        # Etiqueta para indicar la página actual
+
+        lbl_mostrar_reservas = tk.Label(self.frame_contenido, text="Reservas")
+        lbl_mostrar_reservas.pack()
+
+        # muestra las reservas en la interfaz grafica
+
+        for reserva in lista_reservas:
+            lbl_reserva = tk.Label(self.frame_contenido, text=reserva.getNombreCliente())
+            lbl_reserva.pack()
+            lbl_reserva = tk.Label(self.frame_contenido, text=reserva.getFecha())
+            lbl_reserva.pack()
+            lbl_reserva = tk.Label(self.frame_contenido, text=reserva.getNumPersonas())
+            lbl_reserva.pack()
+            lbl_reserva = tk.Label(self.frame_contenido, text="Mesa " + reserva.getMesaAsignada())
+            lbl_reserva.pack()
+
+    #--------------------------------------------------------------------------------------------------------------
+    
+    def eliminarPlato(self):
+        # Limpiar el contenido actual
+        for widget in self.frame_contenido.winfo_children():
+            widget.destroy()
+
+        # Etiqueta para indicar la página actual
+        lbl_eliminar_plato = tk.Label(self.frame_contenido, text="Eliminar Plato")
+        lbl_eliminar_plato.pack()
+
+        # Mostrar los platos y botones para eliminarlos
+        for plato in lista_platos:
+            lbl_plato = tk.Label(self.frame_contenido, text=plato.getNombre())
+            lbl_plato.pack()
+            
+            # Utilizar una función lambda para pasar el nombre del plato a la función eliminarPlatos
+            btn_eliminar_plato = tk.Button(self.frame_contenido, text="Eliminar Plato", command=lambda p=plato: self.eliminarPlatos(p))
+            btn_eliminar_plato.pack()
+
+    def eliminarPlatos(self, plato):
+        # Obtener el nombre del plato
+        nombre = plato.getNombre()
+
+        # Filtrar la lista de platos
+        lista_platos[:] = [p for p in lista_platos if p.getNombre() != nombre]
+
+        messagebox.showinfo("Éxito", f"Plato '{nombre}' eliminado exitosamente")
+
+        # Actualizar la interfaz gráfica
+        self.eliminarPlato()
+
+    #--------------------------------------------------------------------------------------------------------------
+
+    def editarPlato(self):
+        # Limpiar el contenido actual
+        for widget in self.frame_contenido.winfo_children():
+            widget.destroy()
+
+        # Etiqueta para indicar la página actual
+        lbl_editar_plato = tk.Label(self.frame_contenido, text="Editar Plato")
+        lbl_editar_plato.pack()
+
+        # Mostrar los platos y botones para editarlos
+        for plato in lista_platos:
+            lbl_plato = tk.Label(self.frame_contenido, text=plato.getNombre())
+            lbl_plato.pack()
+            
+            # Utilizar una función lambda para pasar el nombre del plato a la función editarPlatos
+            btn_editar_plato = tk.Button(self.frame_contenido, text="Editar Plato", command=lambda p=plato: self.editarPlatos(p))
+            btn_editar_plato.pack()
+
+    def editarPlatos(self, plato):
+        # Obtener el nombre del plato
+        nombre = plato.getNombre()
+
+        # Crear una ventana para editar el plato
+        ventana_editar_plato = tk.Toplevel(root)
+        ventana_editar_plato.title("Editar Plato")
+
+        # Crear etiquetas y cuadros de texto para ingresar información del plato
+        label_nombre = tk.Label(ventana_editar_plato, text="Nombre del Plato:")
+        entry_nombre = tk.Entry(ventana_editar_plato)
+        label_descripcion = tk.Label(ventana_editar_plato, text="Descripción:")
+        entry_descripcion = tk.Entry(ventana_editar_plato)
+        label_precio = tk.Label(ventana_editar_plato, text="Precio:")
+        entry_precio = tk.Entry(ventana_editar_plato)
+        label_cantidad = tk.Label(ventana_editar_plato, text="Cantidad:")
+        entry_cantidad = tk.Entry(ventana_editar_plato)
+
+        label_nombre.pack()
+        entry_nombre.pack()
+        label_descripcion.pack()
+        entry_descripcion.pack()
+        label_precio.pack()
+        entry_precio.pack()
+        label_cantidad.pack()
+        entry_cantidad.pack()
+
+        # Función para manejar el clic en el botón de editar
+
+        def editar():
+            nuevo_nombre = entry_nombre.get()
+            nueva_descripcion = entry_descripcion.get()
+
+            # Validar entrada para el precio
+            try:
+                nuevo_precio = float(entry_precio.get())
+            except ValueError:
+                messagebox.showerror("Error", "Por favor, ingrese un número válido para el precio.")
+                return
+
+            # Validar entrada para la cantidad de platos
+            try:
+                nueva_cantidad = int(entry_cantidad.get())
+            except ValueError:
+                messagebox.showerror("Error", "Por favor, ingrese un número válido para la cantidad de platos.")
+                return
+
+            plato.setNombre(nuevo_nombre)
+            plato.setDescripcion(nueva_descripcion)
+            plato.setPrecio(nuevo_precio)
+            plato.setCantidad(nueva_cantidad)
+
+            messagebox.showinfo("Éxito", f"Plato '{nombre}' editado exitosamente")
+            ventana_editar_plato.destroy()
+
+            # Actualizar la interfaz gráfica
+            self.editarPlato()
+
+        # Crear botón para editar
+        btn_editar = tk.Button(ventana_editar_plato, text="Editar", command=editar)
+        btn_editar.pack()
+
+        # Función para manejar el clic en el botón de cancelar
+        def cancelar():
+            ventana_editar_plato.destroy()
+
+        # Crear botón para cancelar
+        btn_cancelar = tk.Button(ventana_editar_plato, text="Cancelar", command=cancelar)
+        btn_cancelar.pack()
+
+    
+
+    
+
+
+#************************************************Botones y interfaces graficas************************************************
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    root.title("Sistema de Restaurante")
+    app = RestauranteApp(root)
+    root.mainloop()
 
 
 

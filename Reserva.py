@@ -1,9 +1,12 @@
 class Reserva:
 
+    contadorReserva = 1
+
     # Constructor de la clase Reserva
 
-    def __init__(self, idReserva=None, nombreCliente=None, fecha=None, numPersonas=None, mesaAsignada=None):
-        self.idReserva = idReserva
+    def __init__(self,nombreCliente=None, fecha=None, numPersonas=None, mesaAsignada=None):
+        Reserva.contadorReserva += 1
+        self.idReserva = Reserva.contadorReserva
         self.nombreCliente = nombreCliente
         self.fecha = fecha
         self.numPersonas = numPersonas
@@ -50,19 +53,19 @@ class Reserva:
 
     #-------------------------------------------------------------- operaciones --------------------------------------------------------------
 
-    def editarreserva(self, nombreCliente, fecha, numPersonas, mesaAsignada):
+    def editarReserva(self, nombreCliente, fecha, numPersonas, mesaAsignada):
         self.nombreCliente = nombreCliente
         self.fecha = fecha
         self.numPersonas = numPersonas
         self.mesaAsignada = mesaAsignada
 
-    def buscarreserva(self, idReserva):
+    def buscarReserva(self, idReserva):
         if self.idReserva == idReserva:
             return self
         else:
             return None
         
-    def eliminarreserva(self, idReserva):
+    def eliminaReserva(self, idReserva):
         if self.idReserva == idReserva:
             return True
         else:
