@@ -1,6 +1,12 @@
 import os
+import smtplib
 import tkinter as tk
-from tkinter import simpledialog, messagebox , ttk
+import ssl
+from email.message import EmailMessage
+from tkinter import  messagebox , ttk
+import json
+import datetime
+
 
 # Importar clases
 
@@ -27,7 +33,7 @@ lista_pedidos = []
 
 # Creacion clientes
 
-cliente1 = Cliente("1", "Juan", "cliente1@hotmail.com","3113654364")
+cliente1 = Cliente("1", "Daniel", "daniel.toro1@utp.edu.co","3113654364")
 lista_clientes.append(cliente1)
 
 # Creacion platos
@@ -37,13 +43,19 @@ lista_platos.append(plato1)
 
 # Creacion reservas
 
-reserva1 = Reserva( "Juan", "12/10/2021", 5, "1")
+reserva1 = Reserva( "Valentina", "20/11/2023", 5, "1")
 lista_reservas.append(reserva1)
 
 # Creacion mesas
 
 mesa1 = Mesa(1, "Mesa 1", 5, "Disponible")
 lista_mesas.append(mesa1)
+mesa2 = Mesa(2, "Mesa 2", 5, "Disponible")
+lista_mesas.append(mesa2)
+mesa3 = Mesa(3, "Mesa 3", 5, "Disponible")
+lista_mesas.append(mesa3)
+mesa4 = Mesa(4, "Mesa 4", 5, "Disponible")
+lista_mesas.append(mesa4)
 
 # Creacion menu del restaurante
 
@@ -53,6 +65,44 @@ menuRestaurante = Menu()
 
 menuRestaurante.agregar_plato(plato1)
 
+def enviar_correo(destinatario, asunto, mensaje):
+    # Configuración del servidor de correo
+    servidor_correo = 'smtp.gmail.com'
+    puerto = 465
+    remitente_correo = 'polopolomarica2022@gmail.com'
+    password = 'ufnx cmjw qphb qmcj'
+
+    # Crear el objeto MIMEText
+    msg = EmailMessage()
+    msg['Subject'] = asunto
+    msg['From'] = remitente_correo
+    msg['To'] = destinatario
+    msg.set_content(mensaje)
+
+    context = ssl.create_default_context()
+
+    # Configurar el servidor SMTP
+    with smtplib.SMTP_SSL(servidor_correo, puerto,context=context) as smtp:
+        smtp.login(remitente_correo, password)
+        smtp.sendmail(remitente_correo, destinatario, msg.as_string())
+
+#************************************************¿manejo de reservsa por json************************************************
+
+def guardarReservas():
+    with open('reservas.json', 'w') as file:
+        json.dump(lista_reservas, file, indent=4)
+
+def cargarReservas():
+    global lista_reservas
+    if os.path.exists('reservas.json'):
+        with open('reservas.json') as file:
+            lista_reservas = json.load(file)
+def mostrarReservas():
+    for reserva in lista_reservas:
+        print(reserva.getNombreCliente())
+        print(reserva.getFecha())
+        print(reserva.getNumPersonas())
+        print(reserva.getMesaAsignada())
 
 #************************************************Clase Restaurante************************************************
 
@@ -217,13 +267,10 @@ class RestauranteApp(tk.Frame):
 
     #--------------------------------------------------------------------------------------------------------------
 
-    def agregarReserva(self):
+    def agregarReserva(self,cliente):
         ventana_agregar_reserva = tk.Toplevel(root)
         ventana_agregar_reserva.title("Agregar Reserva")
-
-        # Pide la identificación del cliente para realizar la reserva, si no está registrado, lo registra
         
-
         # Crear etiquetas y cuadros de texto para ingresar información de la reserva
         label_nombre = tk.Label(ventana_agregar_reserva, text="Nombre del Cliente:")
         entry_nombre = tk.Entry(ventana_agregar_reserva)
@@ -254,12 +301,68 @@ class RestauranteApp(tk.Frame):
             except ValueError:
                 messagebox.showerror("Error", "Por favor, ingrese un número válido para el número de personas.")
                 return
+            
+            #validar que la mesa este disponible y la fecha sea valida
+
+            # Validar entrada para la mesa asignada
+
+            try:
+                mesa_asignada = int(entry_mesa_asignada.get())
+            except ValueError:
+                messagebox.showerror("Error", "Por favor, ingrese un número válido para la mesa asignada.")
+                return
+            
+            # Validar que la mesa asignada esté disponible 
+            mesa = lista_mesas[mesa_asignada - 1]
+            if mesa.getEstado() != "Disponible":
+                messagebox.showerror("Error", "La mesa asignada no está disponible.")
+                return
+            
+            # Validar que la fecha sea válida
+            try:
+                datetime.datetime.strptime(fecha, '%d/%m/%Y')
+            except ValueError:
+                messagebox.showerror("Error", "Por favor, ingrese una fecha válida.")
+                return
+            
+            # Validar que la fecha sea mayor a la fecha actual
+            fecha_actual = datetime.datetime.now()
+            fecha_reserva = datetime.datetime.strptime(fecha, '%d/%m/%Y')
+            if fecha_reserva < fecha_actual:
+                messagebox.showerror("Error", "Por favor, ingrese una fecha válida.")
+                return
+            
+            # Validar que la fecha no esté ocupada
+            for reserva in lista_reservas:
+                if reserva.getFecha() == fecha:
+                    messagebox.showerror("Error", "La fecha ingresada ya está ocupada.")
+                    return
+                
+            # Actualizar el estado de la mesa
+            mesa.setEstado("Ocupada")
 
             mesa_asignada = entry_mesa_asignada.get()
 
             reserva = Reserva(nombre, fecha, num_personas, mesa_asignada)
             lista_reservas.append(reserva)
+
+            # Mostrar mensaje de éxito
             messagebox.showinfo("Éxito", "Reserva agregada exitosamente")
+
+            #ub
+
+            # Enviar correo de confirmación al cliente dinamicamente
+            destinatario = cliente.getCorreoElectronico()
+            asunto = 'Confirmación de reserva'
+            mensaje = f'Su reserva para {fecha} ha sido confirmada. ¡Gracias por elegir nuestro restaurante!'
+            
+            try:
+                enviar_correo(destinatario, asunto, mensaje)
+                print("Correo enviado con éxito.")
+            except Exception as e:
+                print(f"Error al enviar el correo: {e}")
+
+            # Cerrar la ventana
             ventana_agregar_reserva.destroy()
 
         # Crear botón para agregar
@@ -351,7 +454,7 @@ class RestauranteApp(tk.Frame):
                 # Agregar lógica para reservar con el cliente encontrado
                 messagebox.showinfo("Éxito", f"cliente esta registrado como {cliente.getNombre()}")
                 ventana_agregar_reserva.destroy()
-                self.agregarReserva()
+                self.agregarReserva(cliente)
 
         # Botón para iniciar la búsqueda y realizar la acción correspondiente
         btn_buscar = tk.Button(ventana_agregar_reserva, text="Buscar", command=realizarAccion)
@@ -389,7 +492,7 @@ class RestauranteApp(tk.Frame):
         lbl_mostrar_reservas = tk.Label(self.frame_contenido, text="Reservas")
         lbl_mostrar_reservas.pack()
 
-        # muestra las reservas en la interfaz grafica
+        # muestra las reservas en la interfaz grafica desde el json
 
         for reserva in lista_reservas:
             lbl_reserva = tk.Label(self.frame_contenido, text=reserva.getNombreCliente())
@@ -535,79 +638,3 @@ if __name__ == "__main__":
     root.title("Sistema de Restaurante")
     app = RestauranteApp(root)
     root.mainloop()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# class Menu:
-#     def __init__(self, idMenu, nombre, platos):
-#         self.idMenu = idMenu
-#         self.nombre = nombre
-#         self.platos = platos
-
-#     def obtenerInformacion(self):
-#         info_menu = f"ID del Menú: {self.idMenu}, Nombre: {self.nombre}, Platos:"
-#         for plato in self.platos:
-#             info_menu += f"\n   - {plato.obtenerInformacion()}"
-#         return info_menu
-
-# # Obtener información del menú por teclado
-# idMenu = int(input("Ingrese el ID del menú: "))
-# nombre_menu = input("Ingrese el nombre del menú: ")
-
-# # Crear una lista de platos para el menú
-# platos_menu = []
-# num_platos = int(input("Ingrese el número de platos en el menú: "))
-# for i in range(num_platos):
-#     print(f"\nIngrese la información del plato {i + 1}:")
-#     idPlato = int(input("   ID del Plato: "))
-#     nombre_plato = input("   Nombre del Plato: ")
-#     descripcion_plato = input("   Descripción del Plato: ")
-#     precio_plato = float(input("   Precio del Plato: "))
-#     plato = Plato(idPlato, nombre_plato, descripcion_plato, precio_plato)
-#     platos_menu.append(plato)
-
-# # Crear un objeto de la clase Menu con la información ingresada
-# menu1 = Menu(idMenu, nombre_menu, platos_menu)
-
-# # Obtener información del menú
-# print(menu1.obtenerInformacion())
