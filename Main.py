@@ -56,6 +56,8 @@ mesa3 = Mesa(3, "Mesa 3", 5, "Disponible")
 lista_mesas.append(mesa3)
 mesa4 = Mesa(4, "Mesa 4", 5, "Disponible")
 lista_mesas.append(mesa4)
+mesa5 = Mesa(5, "Mesa 5", 5, "Disponible")
+lista_mesas.append(mesa5)
 
 # Creacion menu del restaurante
 
@@ -114,6 +116,13 @@ class RestauranteApp(tk.Frame):                                                 
 
         #gestion menu 
 
+
+
+
+
+
+
+
         self.btn_gestion_menu = tk.Button(self.master, text="Gestion Menu", command=self.gestionMenu)
         self.btn_gestion_menu.pack()
 
@@ -121,6 +130,11 @@ class RestauranteApp(tk.Frame):                                                 
 
         self.btn_gestion_reservas = tk.Button(self.master, text="Gestion Reservas", command=self.gestionReservas)
         self.btn_gestion_reservas.pack()
+
+        #change the color of the background
+
+        self.master.configure(bg="Lightblue")                                       #se cambia el color de fondo de la ventana principal
+
 
 
     
@@ -156,28 +170,64 @@ class RestauranteApp(tk.Frame):                                                 
 
     def gestionReservas(self):
             
-            # Limpiar el contenido actual
-            for widget in self.frame_contenido.winfo_children():
-                widget.destroy()
+        # Limpiar el contenido actual
+        for widget in self.frame_contenido.winfo_children():
+            widget.destroy()
+
+        
+        style = ttk.Style()                                                     #se crea un objeto de la clase ttk.Style()
+        style.configure("TButton", font=('Calibri', 12) , padding=10 , background="green", foreground="black")  #se configura el estilo de los botones
     
-            # Etiqueta para indicar la página actual
-            lbl_gestion_reservas = tk.Label(self.frame_contenido, text="Gestión de Reservas")
-            lbl_gestion_reservas.pack()
+        # Etiqueta para indicar la página actual
+        lbl_gestion_reservas = tk.Label(self.frame_contenido, text="Gestión de Reservas")
+        lbl_gestion_reservas.pack()
     
-            # Botones de navegación
-            btn_agregar_reserva = tk.Button(self.frame_contenido, text="Realizar Reserva", command=self.validarCliente)
-            btn_agregar_reserva.pack()
+        # Botones de navegación
+        btn_agregar_reserva = ttk.Button(self.frame_contenido, text="Agregar Reserva", command=self.validarCliente,style='TButton' )
+        btn_agregar_reserva.pack()
     
-            # btn_editar_reserva = tk.Button(self.frame_contenido, text="Editar Reserva", command=self.editarReserva)
-            # btn_editar_reserva.pack()
+        # btn_editar_reserva = tk.Button(self.frame_contenido, text="Editar Reserva", command=self.editarReserva)
+        # btn_editar_reserva.pack()
     
-            btn_mostrar_reservas = tk.Button(self.frame_contenido, text="Mostrar Reservas", command=self.mostrarReservas)
-            btn_mostrar_reservas.pack()
+        btn_mostrar_reservas = ttk.Button(self.frame_contenido, text="Mostrar Reservas", command=self.mostrarReservas, style='TButton' )
+        btn_mostrar_reservas.pack()
     
-            # btn_eliminar_reserva = tk.Button(self.frame_contenido, text="Eliminar Reserva", command=self.eliminarReserva)
-            # btn_eliminar_reserva.pack()
+        btn_eliminar_reserva = ttk.Button(self.frame_contenido, text="Eliminar Reserva", command=self.eliminarReserva,style='TButton' )
+        btn_eliminar_reserva.pack()
 
     #--------------------------------------------------------------------------------------------------------------
+
+    def eliminarReserva(self):
+        # Limpiar el contenido actual
+        for widget in self.frame_contenido.winfo_children():
+            widget.destroy()
+
+        # Etiqueta para indicar la página actual
+        lbl_eliminar_reserva = tk.Label(self.frame_contenido, text="Eliminar Reserva")
+        lbl_eliminar_reserva.pack()
+
+        # Mostrar las reservas y botones para eliminarlas
+        for reserva in lista_reservas:
+            lbl_reserva = tk.Label(self.frame_contenido, text=reserva.getNombreCliente())
+            lbl_reserva.pack()
+            
+            # Utilizar una función lambda para pasar el nombre de la reserva a la función eliminarReservas
+            btn_eliminar_reserva = tk.Button(self.frame_contenido, text="Eliminar Reserva", command=lambda r=reserva: self.eliminarReservas(r))
+            btn_eliminar_reserva.pack()
+
+    def eliminarReservas(self, reserva):
+        # Obtener el nombre de la reserva
+        nombre = reserva.getNombreCliente()
+
+        # Filtrar la lista de reservas
+        lista_reservas[:] = [r for r in lista_reservas if r.getNombreCliente() != nombre]
+
+        messagebox.showinfo("Éxito", f"Reserva de '{nombre}' eliminada exitosamente")
+
+        # Actualizar la interfaz gráfica
+        self.eliminarReserva()
+
+
 
     def agregarPlato(self):
 
@@ -405,7 +455,7 @@ class RestauranteApp(tk.Frame):                                                 
 
     def validarCliente(self):
         ventana_agregar_reserva = tk.Toplevel(root)
-        ventana_agregar_reserva.title("Agregar Reserva")
+        ventana_agregar_reserva.title("VALIDAR CLIENTE")
 
         label_id_cliente = tk.Label(ventana_agregar_reserva, text="Identificación del Cliente:")
         entry_id_cliente = tk.Entry(ventana_agregar_reserva)
@@ -423,7 +473,7 @@ class RestauranteApp(tk.Frame):                                                 
             cliente = buscarCliente()
 
             if cliente is None:
-                messagebox.showinfo("Éxito", "Cliente no registrado, por favor regístrelo")
+                messagebox.showinfo("ERROR", "Cliente no registrado, por favor regístrelo")
                 ventana_agregar_reserva.destroy()
                 self.agregarCliente() 
             else:
@@ -453,7 +503,9 @@ class RestauranteApp(tk.Frame):                                                 
 
         for plato in lista_platos:
             lbl_plato = tk.Label(self.frame_contenido, text=plato.getNombre())
+            lbl_precio = tk.Label(self.frame_contenido, text=plato.getPrecio())
             lbl_plato.pack()
+            lbl_precio.pack()
 
     #--------------------------------------------------------------------------------------------------------------
 
@@ -605,6 +657,5 @@ class RestauranteApp(tk.Frame):                                                 
 #************************************************apartafo grafico************************************************
 
 root = tk.Tk()                                                          #se crea la ventana       
-root.title("Sistema de Restaurante")                                    #se le pone un titulo a la ventana
 app = RestauranteApp(root)                                              #se crea el objeto app de la clase RestauranteApp
 root.mainloop()                                                         #se ejecuta la ventana ejecutando un loop infinito
